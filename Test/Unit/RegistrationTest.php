@@ -62,17 +62,14 @@ class RegistrationTest extends TestCase
         self::assertArrayHasKey('magento/module-config', $composer['require']);
     }
 
-    public function testSetupVersionMatchesReadmeBadge(): void
+    public function testSetupVersionMatchesComposerVersion(): void
     {
         $root = dirname(__DIR__, 2);
         $dom = new \DOMDocument();
         self::assertTrue($dom->load($root . '/etc/module.xml'));
         $setupVersion = $dom->getElementsByTagName('module')->item(0)?->getAttribute('setup_version');
+        $composer = json_decode((string)file_get_contents($root . '/composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        $readme = (string)file_get_contents($root . '/README.md');
-        self::assertSame(1, preg_match('#badge/version-([0-9.]+)-#', $readme, $match));
-
-        self::assertSame('0.2.0', $setupVersion);
-        self::assertSame($match[1], $setupVersion);
+        self::assertSame($composer['version'] ?? null, $setupVersion);
     }
 }

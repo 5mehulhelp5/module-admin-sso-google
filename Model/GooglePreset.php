@@ -1,11 +1,13 @@
 <?php
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 declare(strict_types=1);
 
 namespace DmLab\AdminSsoGoogle\Model;
 
+use DmLab\SsoCore\Api\AuthorizationParamsProviderInterface;
 use DmLab\SsoCore\Api\ProviderPresetInterface;
 use Magento\Framework\View\Asset\Repository as AssetRepository;
 
@@ -23,7 +25,7 @@ use Magento\Framework\View\Asset\Repository as AssetRepository;
  * (see the module README). The practical Google control is who may sign in,
  * restricted via the `hd` hosted-domain claim (see Plugin/EnforceHostedDomain).
  */
-class GooglePreset implements ProviderPresetInterface
+class GooglePreset implements ProviderPresetInterface, AuthorizationParamsProviderInterface
 {
     /** Stable machine code identifying Google across the suite. */
     private const CODE = 'google';
@@ -45,9 +47,11 @@ class GooglePreset implements ProviderPresetInterface
 
     /**
      * @param AssetRepository $assetRepository
+     * @param Config $config
      */
     public function __construct(
-        private readonly AssetRepository $assetRepository
+        private readonly AssetRepository $assetRepository,
+        private readonly Config $config
     ) {
     }
 
@@ -115,5 +119,22 @@ class GooglePreset implements ProviderPresetInterface
     public function getButtonIconUrl(): ?string
     {
         return $this->assetRepository->getUrl(self::ICON_ASSET);
+    }
+
+    /**
+     * Send the allowed Workspace domain as the `hd` authorization param.
+     *
+     * `hd` in the request only narrows Google's account chooser and is user-editable;
+     * {@see \DmLab\AdminSsoGoogle\Plugin\EnforceHostedDomain} stays the authority. The
+     * passed config carries only generic fields, so the domain comes from this module's Config.
+     *
+     * @param array<string,mixed> $config
+     * @return array<string,string>
+     */
+    public function getAuthorizationParams(array $config): array
+    {
+        $domain = $this->config->getAllowedDomain();
+
+        return $domain === null ? [] : ['hd' => $domain];
     }
 }

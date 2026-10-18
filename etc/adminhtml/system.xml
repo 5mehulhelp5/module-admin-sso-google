@@ -2,6 +2,7 @@
 <!--
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -21,10 +22,9 @@
                 <field id="allowed_domain" translate="label comment" type="text" sortOrder="10"
                        showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Allowed Workspace Domain</label>
-                    <comment><![CDATA[Restrict sign-in to a Google Workspace domain via the
-                        <code>hd</code> claim, e.g. <code>example.com</code>. Personal Google
-                        accounts (no <code>hd</code>) are rejected. Leave empty to allow any
-                        Google account.]]></comment>
+                    <comment>Required. Matched against the hd claim; personal Google accounts are refused.</comment>
+                    <backend_model>DmLab\AdminSsoGoogle\Model\Config\Backend\AllowedDomain</backend_model>
+                    <validate>required-entry</validate>
                 </field>
             </group>
         </section>

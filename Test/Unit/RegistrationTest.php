@@ -1,6 +1,7 @@
 <?php
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 declare(strict_types=1);
 
@@ -28,7 +29,7 @@ class RegistrationTest extends TestCase
         self::assertFileExists($path . '/etc/module.xml');
     }
 
-    public function testModuleSequencesAfterAdminSso(): void
+    public function testModuleSequencesAfterSsoCoreAndAdminSso(): void
     {
         $paths = (new ComponentRegistrar())->getPaths(ComponentRegistrar::MODULE);
         $moduleXml = ($paths['DmLab_AdminSsoGoogle'] ?? '') . '/etc/module.xml';
@@ -44,5 +45,34 @@ class RegistrationTest extends TestCase
         }
 
         self::assertContains('DmLab_AdminSso', $sequenced);
+        self::assertContains('DmLab_SsoCore', $sequenced);
+    }
+
+    public function testComposerDeclaresDirectDependenciesWithoutVersion(): void
+    {
+        $composer = json_decode(
+            (string)file_get_contents(dirname(__DIR__, 2) . '/composer.json'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+
+        self::assertMatchesRegularExpression('/^\d+\.\d+\.\d+$/', $composer['version'] ?? '');
+        self::assertSame('^0.2.0', $composer['require']['dmlab/module-sso-core'] ?? null);
+        self::assertArrayHasKey('magento/module-config', $composer['require']);
+    }
+
+    public function testSetupVersionMatchesReadmeBadge(): void
+    {
+        $root = dirname(__DIR__, 2);
+        $dom = new \DOMDocument();
+        self::assertTrue($dom->load($root . '/etc/module.xml'));
+        $setupVersion = $dom->getElementsByTagName('module')->item(0)?->getAttribute('setup_version');
+
+        $readme = (string)file_get_contents($root . '/README.md');
+        self::assertSame(1, preg_match('#badge/version-([0-9.]+)-#', $readme, $match));
+
+        self::assertSame('0.2.0', $setupVersion);
+        self::assertSame($match[1], $setupVersion);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 declare(strict_types=1);
 
@@ -11,6 +12,7 @@ use DmLab\AdminSso\Model\Config as AdminSsoConfig;
 use DmLab\AdminSso\Model\Config\Source\ActiveProvider;
 use DmLab\AdminSso\Model\Oidc\AuthorizationStarter;
 use DmLab\AdminSso\Model\PresetRegistry;
+use DmLab\AdminSsoGoogle\Model\Config as GoogleConfig;
 use DmLab\AdminSsoGoogle\Model\GooglePreset;
 use DmLab\SsoCore\Api\AuthorizationStateStorageInterface;
 use DmLab\SsoCore\Model\Oidc\AuthorizationRequestFactory;
@@ -97,6 +99,7 @@ class AcceptanceTest extends TestCase
         self::assertStringNotContainsString('groups', $url);
         self::assertStringContainsString('code_challenge_method=S256', $url);
         self::assertStringContainsString('redirect_uri=' . rawurlencode(self::CALLBACK_URL), $url);
+        self::assertStringContainsString('hd=example.com', $url);
     }
 
     /**
@@ -107,7 +110,12 @@ class AcceptanceTest extends TestCase
         $assetRepository = $this->createStub(AssetRepository::class);
         $assetRepository->method('getUrl')->willReturn('https://magento.loc/static/google.svg');
 
-        return new PresetRegistry(['google' => new GooglePreset($assetRepository)]);
+        $googleConfig = $this->createStub(GoogleConfig::class);
+        $googleConfig->method('getAllowedDomain')->willReturn('example.com');
+
+        $preset = new GooglePreset($assetRepository, $googleConfig);
+
+        return new PresetRegistry(['google' => $preset]);
     }
 
     /**

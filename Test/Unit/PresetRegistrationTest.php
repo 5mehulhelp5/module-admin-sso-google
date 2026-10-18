@@ -1,12 +1,14 @@
 <?php
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 declare(strict_types=1);
 
 namespace DmLab\AdminSsoGoogle\Test\Unit;
 
 use DmLab\AdminSso\Model\PresetRegistry;
+use DmLab\AdminSsoGoogle\Model\Config;
 use DmLab\AdminSsoGoogle\Model\GooglePreset;
 use Magento\Framework\View\Asset\Repository as AssetRepository;
 use PHPUnit\Framework\TestCase;
@@ -36,7 +38,10 @@ class PresetRegistrationTest extends TestCase
 
     public function testRegistryIndexesGooglePresetUnderItsCode(): void
     {
-        $registry = new PresetRegistry([new GooglePreset($this->createStub(AssetRepository::class))]);
+        $registry = new PresetRegistry([new GooglePreset(
+            $this->createStub(AssetRepository::class),
+            $this->createStub(Config::class)
+        )]);
 
         self::assertTrue($registry->has('google'));
         self::assertInstanceOf(GooglePreset::class, $registry->get('google'));

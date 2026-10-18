@@ -2,9 +2,10 @@
 
 > Google Workspace login for the Magento 2 admin panel.
 
-![License](https://img.shields.io/badge/license-OSL--3.0-green) ![Magento](https://img.shields.io/badge/Magento-2.4-orange) ![PHP](https://img.shields.io/badge/PHP-8.3--8.5-blue) ![Version](https://img.shields.io/badge/version-0.0.1-lightgrey)
+[![CI](https://github.com/dmlab-work/module-admin-sso-google/actions/workflows/ci.yml/badge.svg)](https://github.com/dmlab-work/module-admin-sso-google/actions/workflows/ci.yml) [![codecov](https://codecov.io/gh/dmlab-work/module-admin-sso-google/graph/badge.svg)](https://codecov.io/gh/dmlab-work/module-admin-sso-google) [![Packagist](https://img.shields.io/packagist/dt/dmlab/module-admin-sso-google)](https://packagist.org/packages/dmlab/module-admin-sso-google)
+![License](https://img.shields.io/badge/license-OSL--3.0-green) ![Magento](https://img.shields.io/badge/Magento-2.4-orange) ![PHP](https://img.shields.io/badge/PHP-8.3--8.5-blue) ![Version](https://img.shields.io/badge/version-0.2.0-lightgrey)
 
-A thin Google provider plugin for the provider-agnostic `admin-sso` capability. It supplies the Google OIDC preset — a fixed discovery URL, default scopes, optional hosted-domain restriction, login-button branding — while all OIDC protocol lives in `sso-core` and all admin logic in `admin-sso`. Installing it pulls `admin-sso` and `sso-core` automatically.
+A thin Google provider plugin for the provider-agnostic `admin-sso` capability. It supplies the Google OIDC preset — a fixed discovery URL, default scopes, the required hosted-domain restriction, the `hd` account-chooser hint, login-button branding — while all OIDC protocol lives in `sso-core` and all admin logic in `admin-sso`.
 
 ## Installation
 
@@ -13,6 +14,9 @@ composer require dmlab/module-admin-sso-google
 bin/magento module:enable DmLab_SsoCore DmLab_AdminSso DmLab_AdminSsoGoogle
 bin/magento setup:upgrade
 ```
+
+Requires `dmlab/module-admin-sso` and `dmlab/module-sso-core` (a direct dependency); Composer pulls both.
+See [CHANGELOG.md](CHANGELOG.md) for release notes — 0.2.0 has breaking changes.
 
 ## Create the Google OAuth 2.0 client
 
@@ -45,11 +49,15 @@ Admin → Stores → Configuration → **DMLab → Admin SSO**.
 
 | Field | Value |
 |---|---|
-| Allowed Workspace Domain | optional; restrict sign-in to one Workspace domain, e.g. `example.com` |
+| Allowed Workspace Domain | **required**; the one Workspace domain allowed to sign in — a bare domain such as `example.com` (no scheme, `@` or path), validated and lowercased on save |
 
-When **Allowed Workspace Domain** is set, sign-in is enforced against Google's `hd`
-(hosted-domain) claim: accounts outside the domain — including personal Google accounts,
-which carry no `hd` — are rejected on callback. Leave it empty to allow any Google account.
+Sign-in is enforced against Google's `hd` (hosted-domain) claim: accounts outside the
+domain — including personal Google accounts, which carry no `hd` — are rejected on callback.
+While Google is the active provider the domain cannot be saved empty, and if it is empty
+anyway every Google login is refused. Logins also require `email_verified=true`.
+
+The domain is sent as the `hd` authorization param, so Google's account chooser offers only
+that domain. It is a hint the user can edit — the `hd` claim check stays the authority.
 
 Enforce-SSO/break-glass are configured in `admin-sso`; see that module's README.
 
@@ -73,7 +81,7 @@ account with domain-wide delegation) — out of scope for v1.
 
 | Repo | Role |
 |------|------|
-| `sso-core` | Shared OIDC engine (installed automatically) |
+| `sso-core` | Shared OIDC engine (direct dependency, installed automatically) |
 | `admin-sso` · `admin-sso-<idp>` | Admin-panel SSO login |
 | `customer-sso` · `customer-sso-<idp>` | Storefront SSO login |
 | `admin-scim` · `admin-scim-<idp>` | Admin-user provisioning (SCIM 2.0) |

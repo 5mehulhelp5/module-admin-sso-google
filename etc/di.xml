@@ -2,6 +2,7 @@
 <!--
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 -->
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -14,7 +15,7 @@
             </argument>
         </arguments>
     </type>
-    <!-- Enforce the optional Workspace-domain (`hd`) restriction on Google logins,
+    <!-- Enforce the required Workspace domain (`hd`) and `email_verified` on Google logins,
          without touching the provider-agnostic core. -->
     <type name="DmLab\SsoCore\Model\Oidc\IdentityFactory">
         <plugin name="dmlab_admin_sso_google_enforce_hosted_domain"

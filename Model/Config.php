@@ -1,6 +1,7 @@
 <?php
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 declare(strict_types=1);
 
@@ -11,7 +12,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 /**
  * Typed reader over the Google-specific admin configuration.
  *
- * Google is standard OIDC, so the only IdP-specific setting is the optional
+ * Google is standard OIDC, so the only IdP-specific setting is the required
  * allowed Workspace domain, enforced against the `hd` claim on callback
  * ({@see \DmLab\AdminSsoGoogle\Plugin\EnforceHostedDomain}). It lives
  * under the admin-sso section (group `google`). The OIDC client id/secret are
@@ -20,7 +21,7 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
  */
 class Config
 {
-    /** Optional Workspace domain restricting who may sign in (the `hd` claim). */
+    /** Required Workspace domain restricting who may sign in (the `hd` claim). */
     public const XML_PATH_ALLOWED_DOMAIN = 'dmlab_admin_sso/google/allowed_domain';
 
     /**
@@ -34,8 +35,8 @@ class Config
     /**
      * Configured allowed Workspace domain, or null when unset.
      *
-     * Null means any Google account may sign in. Trimmed; a blank value reads as
-     * null.
+     * Null means Google sign-in is misconfigured and every login is refused.
+     * Trimmed; a blank value reads as null.
      */
     public function getAllowedDomain(): ?string
     {

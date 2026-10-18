@@ -1,12 +1,14 @@
 <?php
 /**
  * Copyright © DMLab. All rights reserved.
+ * Licensed under the Open Software License version 3.0 (OSL-3.0). See LICENSE.
  */
 declare(strict_types=1);
 
 namespace DmLab\AdminSsoGoogle\Test\Unit;
 
 use DmLab\AdminSsoGoogle\Model\Config;
+use DmLab\AdminSsoGoogle\Model\Config\Backend\AllowedDomain;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -87,5 +89,24 @@ class SystemConfigTest extends TestCase
         foreach ($paths as $path) {
             self::assertSame(3, count(explode('/', $path)), "Depend '$path' is not fully qualified.");
         }
+    }
+
+    public function testAllowedDomainDeclaresBackendModelAndIsRequired(): void
+    {
+        $field = "/config/system/section[@id='dmlab_admin_sso']"
+            . "/group[@id='google']/field[@id='allowed_domain']";
+
+        self::assertSame(
+            AllowedDomain::class,
+            trim((string)$this->xpath->evaluate("string($field/backend_model)"))
+        );
+        self::assertStringContainsString(
+            'required-entry',
+            (string)$this->xpath->evaluate("string($field/validate)")
+        );
+
+        $comment = strtolower((string)$this->xpath->evaluate("string($field/comment)"));
+        self::assertStringNotContainsString('allow any', $comment);
+        self::assertStringContainsString('required', $comment);
     }
 }
